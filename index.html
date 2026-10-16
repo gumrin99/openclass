@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 수사대 · 실전 수사</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+:root{
+  --desk:#161b30;
+  --desk-line:rgba(255,255,255,.035);
+  --paper:#f6e7c1;
+  --paper-dark:#e3c98c;
+  --ink:#2a2622;
+  --ink-soft:#6b5f4f;
+  --red:#d64545;
+  --green:#2f9e5b;
+  --gold:#f2b632;
+  --blue:#3b6fd8;
+  --white:#fffdf7;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Gowun Dodum','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  color:var(--ink);
+  background-color:var(--desk);
+  background-image:linear-gradient(var(--desk-line) 1px,transparent 1px),linear-gradient(90deg,var(--desk-line) 1px,transparent 1px);
+  background-size:28px 28px;
+  min-height:100vh;display:flex;justify-content:center;padding:16px;
+  -webkit-tap-highlight-color:transparent;
+}
+.app{width:100%;max-width:620px}
+.hidden{display:none !important}
+h1,h2,.jua{font-family:'Jua','Gowun Dodum',sans-serif;font-weight:400}
+
+/* 상단 */
+.topbar{display:flex;align-items:center;justify-content:space-between;color:#fff;margin-bottom:10px;gap:8px}
+.brand{font-family:'Jua',sans-serif;font-size:19px;white-space:nowrap}
+.pills{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.pill{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:5px 12px;font-size:14px;font-family:'Jua',sans-serif;white-space:nowrap}
+.dots{display:flex;gap:5px;margin-bottom:16px}
+.dots i{flex:1;height:8px;border-radius:999px;background:rgba(255,255,255,.12)}
+.dots i.done{background:var(--green)}
+.dots i.part{background:var(--gold)}
+.dots i.now{background:#fff}
+
+/* 폴더 카드 */
+.folder{position:relative;margin-top:24px}
+.folder-tab{position:absolute;top:-23px;left:18px;background:var(--paper-dark);font-family:'Jua',sans-serif;font-size:14px;padding:5px 16px 4px;border-radius:10px 10px 0 0}
+.card{background:var(--paper);border-radius:4px 16px 16px 16px;padding:18px;box-shadow:0 14px 30px rgba(0,0,0,.4);position:relative}
+.tape{position:absolute;top:-10px;right:-8px;background:var(--red);color:#fff;font-family:'Jua',sans-serif;font-size:13px;padding:4px 14px;transform:rotate(6deg);box-shadow:0 3px 6px rgba(0,0,0,.25);letter-spacing:2px}
+
+/* 시작 */
+.cover{text-align:center;padding:26px 18px 22px}
+.badge-icon{font-size:52px;line-height:1}
+.cover .rank-up{display:inline-block;margin-top:8px;font-family:'Jua',sans-serif;font-size:14px;background:var(--ink);color:var(--paper);padding:3px 12px;border-radius:999px}
+.cover h1{font-size:42px;margin-top:6px}
+.cover h1 small{display:block;font-size:22px;color:var(--red);margin-top:2px}
+.cover .sub{font-family:'Jua',sans-serif;font-size:18px;margin-top:6px}
+.brief{margin:16px 0 0;background:var(--white);border:2px dashed var(--paper-dark);border-radius:12px;padding:12px 14px;font-size:15px;line-height:1.65;text-align:left}
+.steps{list-style:none;margin:14px 0 0;text-align:left;display:grid;gap:8px}
+.steps li{display:flex;gap:10px;align-items:flex-start;font-size:15.5px;line-height:1.5}
+.steps .num{flex:none;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--paper);display:grid;place-items:center;font-family:'Jua',sans-serif}
+.formula{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;font-family:'Jua',sans-serif;font-size:14px}
+.formula span{background:var(--white);border:2px solid var(--paper-dark);border-radius:999px;padding:3px 10px}
+.formula b{font-weight:400;color:var(--ink-soft);align-self:center}
+.name-row{margin-top:18px;display:flex;gap:8px}
+.name-row input{flex:1;min-width:0;font-family:'Jua',sans-serif;font-size:19px;padding:0 14px;height:54px;border-radius:14px;border:3px solid var(--ink);background:var(--white);color:var(--ink)}
+.name-row input:focus{outline:none;border-color:var(--red)}
+
+/* 버튼 */
+.btn{font-family:'Jua',sans-serif;font-size:18px;border:none;border-radius:14px;min-height:54px;padding:0 16px;cursor:pointer;color:#fff;box-shadow:0 4px 0 rgba(0,0,0,.25);transition:transform .08s,box-shadow .08s,opacity .15s}
+.btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.25)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-start{background:var(--red);font-size:21px;white-space:nowrap}
+.btn-hint{background:#8a7a60}
+.btn-check{background:var(--gold);color:var(--ink)}
+.btn-final{background:var(--blue)}
+.btn-final.arm{background:var(--red);animation:pulse .8s infinite alternate}
+.btn-next{background:var(--green);width:100%}
+@keyframes pulse{to{filter:brightness(1.15)}}
+.btn-row{display:grid;grid-template-columns:auto 1fr 1fr;gap:8px;margin-top:12px}
+
+/* 사건 정보 */
+.case-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:10px}
+.case-head h2{font-size:20px}
+.case-head .pts{font-size:13px;color:var(--ink-soft);white-space:nowrap}
+
+/* 그림 */
+.frame{position:relative;background:#fff;border:3px solid var(--ink);border-radius:10px;overflow:hidden;aspect-ratio:400/260}
+.frame svg{display:block;width:100%;height:100%}
+.stamp{position:absolute;right:12px;bottom:12px;z-index:3;font-family:'Jua',sans-serif;font-size:28px;padding:2px 14px;border:4px solid currentColor;border-radius:10px;background:rgba(255,255,255,.85);transform:rotate(-12deg);animation:stampIn .35s cubic-bezier(.2,1.6,.4,1)}
+.stamp.ok{color:var(--red)}
+.stamp.part{color:var(--blue)}
+@keyframes stampIn{from{transform:rotate(-12deg) scale(2.2);opacity:0}to{transform:rotate(-12deg) scale(1);opacity:1}}
+
+/* 단서 칩 */
+.clue-head{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-family:'Jua',sans-serif}
+.clue-head .count{font-size:15px}
+.clue-head .count b{font-weight:400;color:var(--green);font-size:20px}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:7px;margin-top:8px}
+.chip{background:var(--white);border:2px dashed var(--paper-dark);border-radius:10px;padding:5px 4px;text-align:center;min-height:52px;display:flex;flex-direction:column;justify-content:center}
+.chip .cat{font-size:11.5px;color:var(--ink-soft)}
+.chip .w{font-family:'Jua',sans-serif;font-size:17px;letter-spacing:1px;color:#b9a77f}
+.chip.hinted .w{color:var(--ink)}
+.chip.found{background:var(--green);border:2px solid var(--green);animation:pop .35s}
+.chip.found .cat{color:rgba(255,255,255,.8)}
+.chip.found .w{color:#fff;letter-spacing:0}
+.chip.missed{border:2px solid var(--red)}
+.chip.missed .w{color:var(--red);letter-spacing:0}
+@keyframes pop{50%{transform:scale(1.12)}}
+
+/* 작성 칸 */
+.write-label{margin-top:14px;font-family:'Jua',sans-serif;font-size:15px}
+textarea{width:100%;margin-top:6px;min-height:110px;resize:vertical;font-family:'Gowun Dodum',sans-serif;font-size:17px;line-height:1.6;padding:12px 14px;border-radius:12px;border:3px solid var(--ink);background:var(--white);color:var(--ink)}
+textarea:focus{outline:none;border-color:var(--blue)}
+textarea:disabled{opacity:.7}
+textarea.flash-ok{animation:flashOk .5s}
+textarea.flash-no{animation:shake .3s}
+@keyframes flashOk{40%{border-color:var(--green);box-shadow:0 0 0 4px rgba(47,158,91,.3)}}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+/* 결과 배너 */
+.banner{margin-top:12px;background:var(--white);border-radius:12px;padding:10px 14px;border-left:6px solid var(--gold);animation:fadeUp .3s}
+.banner .t{font-family:'Jua',sans-serif;font-size:16px}
+.banner .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.banner .tags span{background:#e3f4e9;color:var(--green);border-radius:999px;padding:2px 10px;font-size:14px;font-family:'Jua',sans-serif}
+.banner .tip{margin-top:6px;font-size:14px;color:var(--ink-soft)}
+
+/* 정답 공개 */
+.reveal{margin-top:14px;background:var(--white);border-radius:12px;padding:12px 14px;border-left:6px solid var(--blue);animation:fadeUp .3s}
+.reveal .label{font-family:'Jua',sans-serif;font-size:15px;color:var(--ink-soft)}
+.reveal .prompt{font-size:17px;margin-top:6px;line-height:1.75}
+.reveal .prompt .hit{background:linear-gradient(transparent 50%,#bfe8cc 50%);font-weight:700}
+.reveal .prompt .miss{color:var(--red);font-weight:700;border-bottom:2px dashed var(--red)}
+.legend{display:flex;gap:12px;margin-top:8px;font-size:13px;color:var(--ink-soft)}
+.legend .a::before{content:'';display:inline-block;width:14px;height:8px;background:#bfe8cc;margin-right:4px}
+.legend .b::before{content:'';display:inline-block;width:14px;border-bottom:2px dashed var(--red);margin-right:4px;vertical-align:3px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* 조수 */
+.helper{display:flex;align-items:flex-end;gap:10px;margin-top:16px}
+.helper .face{font-size:38px;line-height:1;flex:none}
+.bubble{background:#fff;border-radius:14px 14px 14px 4px;padding:10px 14px;font-size:16px;line-height:1.45;flex:1;min-height:46px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+
+/* 결과 */
+.result{padding:24px 18px}
+.result .head{text-align:center}
+.result h1{font-size:32px}
+.result .who{font-family:'Jua',sans-serif;font-size:18px;margin-top:4px}
+.result .score{font-family:'Jua',sans-serif;font-size:52px;margin:8px 0 0}
+.result .score small{font-size:24px;color:var(--ink-soft)}
+.rank{display:inline-block;margin-top:10px;padding:8px 20px;border:4px solid var(--red);color:var(--red);border-radius:12px;font-family:'Jua',sans-serif;font-size:26px;transform:rotate(-3deg)}
+.result p.msg{margin-top:14px;font-size:16px;line-height:1.6;text-align:center}
+.report{width:100%;margin-top:16px;border-collapse:collapse;font-size:15px;background:var(--white);border-radius:12px;overflow:hidden}
+.report th,.report td{padding:8px 10px;text-align:left;border-bottom:1px solid #eadfc4}
+.report th{font-family:'Jua',sans-serif;font-weight:400;background:var(--paper-dark)}
+.report td.n{text-align:right;font-family:'Jua',sans-serif;white-space:nowrap}
+.bar{height:6px;background:#eadfc4;border-radius:999px;margin-top:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--green)}
+
+/* 장면 전환 */
+.overlay{position:fixed;inset:0;background:rgba(10,12,25,.82);display:grid;place-items:center;z-index:40;animation:fadeUp .25s}
+.overlay .box{text-align:center;color:#fff}
+.overlay .big{font-size:64px}
+.overlay h2{font-size:34px;margin-top:6px}
+.overlay p{margin-top:6px;font-size:17px;opacity:.9}
+
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:50}
+.confetti i{position:absolute;top:-12px;width:10px;height:14px;border-radius:2px;animation:fall 1.4s ease-in forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(540deg);opacity:.8}}
+@media (prefers-reduced-motion:reduce){.confetti{display:none}.stamp,.chip.found{animation:none}}
+@media (max-width:440px){
+  .cover h1{font-size:34px}
+  .btn{font-size:16px;padding:0 10px}
+  .chips{grid-template-columns:repeat(3,1fr)}
+  .name-row{flex-direction:column}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ================= 시작 화면 ================= -->
+<section id="startScreen">
+  <div class="folder">
+    <div class="folder-tab">출동 명령서</div>
+    <div class="card cover">
+      <div class="tape">TOP SECRET</div>
+      <div class="badge-icon">🚨</div>
+      <span class="rank-up">수습 수사관 과정 통과!</span>
+      <h1>AI 수사대<small>실전 수사</small></h1>
+      <div class="sub">프롬프트 속에 숨은 키워드를 찾아라!</div>
+      <div class="brief">
+        🕵️ 수습 훈련은 끝났어요. 이제 <b>진짜 사건</b>이에요!<br>
+        이번에는 보기가 없어요. 그림을 보고 AI가 읽었을 <b>프롬프트를 직접 글로 써서</b>
+        숨은 키워드를 찾아내야 해요.
+      </div>
+      <ol class="steps">
+        <li><span class="num">1</span><span>사건 그림을 꼼꼼히 관찰해요 👀</span></li>
+        <li><span class="num">2</span><span>그림을 만든 프롬프트를 <b>줄글로 자세히</b> 써요 ✍️</span></li>
+        <li><span class="num">3</span><span><b>🔍 중간점검</b>을 누르면 찾은 키워드가 열려요. 몇 번이든 다시 고쳐 써도 OK!</span></li>
+        <li><span class="num">4</span><span>막히면 <b>💡 힌트</b>(사건마다 2번), 다 썼으면 <b>💯 최종 제출</b>!</span></li>
+      </ol>
+      <div class="formula">
+        <span>🐾 누가</span><b>+</b><span>📍 어디서</span><b>+</b><span>🏃 무엇을</span><b>+</b><span>🎨 어떤 색</span><b>+</b><span>🖌️ 어떤 스타일</span>
+      </div>
+      <div class="name-row">
+        <input id="nameInput" maxlength="10" placeholder="수사관 이름" autocomplete="off">
+        <button class="btn btn-start" id="startBtn">🚓 출동!</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 게임 화면 ================= -->
+<section id="gameScreen" class="hidden">
+  <div class="topbar">
+    <div class="brand">🕵️ <span id="agentName">수사관</span></div>
+    <div class="pills">
+      <span class="pill">⭐ <span id="scoreNum">0</span>점</span>
+      <span class="pill" id="caseNum">훈련</span>
+    </div>
+  </div>
+  <div class="dots" id="dots"></div>
+
+  <div class="folder">
+    <div class="folder-tab" id="caseTab">실전 투입 전 훈련</div>
+    <div class="card">
+      <div class="case-head">
+        <h2 id="caseTitle"></h2>
+        <span class="pts" id="casePts"></span>
+      </div>
+      <div class="frame" id="frame"></div>
+
+      <div class="clue-head">
+        <span>🧩 숨은 키워드</span>
+        <span class="count">찾은 단서 <b id="foundNum">0</b> / <span id="totalNum">0</span></span>
+      </div>
+      <div class="chips" id="chips"></div>
+
+      <div class="write-label">✍️ 이 그림을 만든 프롬프트를 자세히 써 보세요</div>
+      <textarea id="input" placeholder="예) 어느 날, 어디에서, 누가, 어떤 색의 무엇을 하고 있다. ○○ 스타일로 그린 그림."></textarea>
+
+      <div class="btn-row" id="actionRow">
+        <button class="btn btn-hint" id="hintBtn">💡 2</button>
+        <button class="btn btn-check" id="checkBtn" disabled>🔍 중간점검</button>
+        <button class="btn btn-final" id="finalBtn" disabled>💯 최종 제출</button>
+      </div>
+
+      <div class="banner hidden" id="banner">
+        <div class="t" id="bannerTitle"></div>
+        <div class="tags" id="bannerTags"></div>
+        <div class="tip" id="bannerTip"></div>
+      </div>
+
+      <div class="reveal hidden" id="reveal">
+        <div class="label">✨ AI가 실제로 읽은 프롬프트</div>
+        <div class="prompt" id="revealPrompt"></div>
+        <div class="legend"><span class="a">찾은 키워드</span><span class="b">놓친 키워드</span></div>
+      </div>
+      <div class="btn-row hidden" id="nextRow" style="grid-template-columns:1fr">
+        <button class="btn btn-next" id="nextBtn">다음 사건 ▶</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="helper">
+    <div class="face">🤖</div>
+    <div class="bubble" id="bubble"></div>
+  </div>
+</section>
+
+<!-- ================= 결과 화면 ================= -->
+<section id="endScreen" class="hidden">
+  <div class="folder">
+    <div class="folder-tab">최종 수사 보고서</div>
+    <div class="card result">
+      <div class="tape">CASE CLOSED</div>
+      <div class="head">
+        <h1>🏆 모든 사건 종료!</h1>
+        <div class="who" id="endName"></div>
+        <div class="score"><span id="endScore">0</span><small> / <span id="endMax">0</span>점</small></div>
+        <div class="rank" id="endRank"></div>
+      </div>
+      <p class="msg" id="endMsg"></p>
+      <table class="report">
+        <thead><tr><th>사건</th><th style="text-align:right">찾은 단서</th></tr></thead>
+        <tbody id="reportBody"></tbody>
+      </table>
+      <button class="btn btn-start" id="restartBtn" style="width:100%;margin-top:18px">🔄 처음부터 다시 수사하기</button>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="overlay hidden" id="overlay"><div class="box"><div class="big" id="ovEmoji"></div><h2 class="jua" id="ovTitle"></h2><p id="ovSub"></p></div></div>
+<div class="confetti" id="confetti"></div>
+
+<script>
+/* =====================================================================
+   사건 그림 (모두 코드로 그린 그림 · 사건마다 스타일이 달라요)
+   ===================================================================== */
+
+// 훈련 — 플랫 일러스트
+function artTrain(){
+  const duck=(x,y,s)=>`<g transform="translate(${x} ${y}) scale(${s})">
+    <ellipse cx="0" cy="6" rx="26" ry="5" fill="none" stroke="#fff" stroke-width="2" opacity=".7"/>
+    <path d="M-18 -2 l-9 -9 l12 3z" fill="#f2b400"/>
+    <ellipse rx="18" ry="11" fill="#ffd23f"/>
+    <circle cx="13" cy="-12" r="9" fill="#ffd23f"/>
+    <path d="M20 -13 l11 3 l-11 3z" fill="#ff8c1a"/>
+    <circle cx="15" cy="-14" r="1.9" fill="#222"/></g>`;
+  return `<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="260" fill="#bfe6ff"/>
+  <g fill="#fff"><ellipse cx="220" cy="42" rx="36" ry="13"/><ellipse cx="244" cy="34" rx="22" ry="13"/><ellipse cx="330" cy="58" rx="40" ry="13"/><ellipse cx="352" cy="49" rx="22" ry="11"/></g>
+  <rect y="120" width="400" height="140" fill="#8fd16a"/>
+  <rect x="364" y="112" width="12" height="34" fill="#8a5a33"/><circle cx="370" cy="104" r="30" fill="#5fae4a"/>
+  <rect x="160" y="104" width="10" height="26" fill="#8a5a33"/><circle cx="165" cy="96" r="22" fill="#5fae4a"/>
+  <ellipse cx="250" cy="196" rx="135" ry="44" fill="#5fb7e8"/>
+  <ellipse cx="250" cy="192" rx="120" ry="36" fill="#7cc8f0"/>
+  ${duck(195,190,1)}${duck(255,205,1.05)}${duck(312,186,.95)}
+  <path d="M106 150 Q124 112 104 78" stroke="#555" stroke-width="2" fill="none"/>
+  <ellipse cx="104" cy="58" rx="18" ry="22" fill="#e63946"/>
+  <path d="M100 79 l4 -3 l4 3z" fill="#c22f3b"/>
+  <ellipse cx="97" cy="50" rx="4" ry="7" fill="#fff" opacity=".45"/>
+  <g fill="#b5651d"><rect x="22" y="136" width="92" height="8" rx="3"/><rect x="22" y="148" width="92" height="7" rx="3"/><rect x="18" y="160" width="100" height="10" rx="3"/></g>
+  <g fill="#6d3f12"><rect x="28" y="134" width="6" height="58"/><rect x="102" y="134" width="6" height="58"/></g>
+</svg>`;
+}
+
+// 사건 1 — 크레파스
+function art1(){
+  const rb=['#e63946','#ff922b','#ffd43b','#51cf66','#4dabf7','#845ef7'];
+  const arcs=rb.map((c,i)=>`<path d="M${60+i*12} 168 A${140-i*12} ${122-i*12} 0 0 1 ${340-i*12} 168" stroke="${c}" stroke-width="12" fill="none"/>`).join('');
+  return `<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="cr1"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="5"/></filter>
+    <pattern id="pp1" width="6" height="6" patternUnits="userSpaceOnUse"><rect width="6" height="6" fill="#fffdf4"/><path d="M0 6 L6 0" stroke="#f0e8d2"/></pattern>
+  </defs>
+  <rect width="400" height="260" fill="url(#pp1)"/>
+  <g filter="url(#cr1)" stroke-linecap="round" stroke-linejoin="round">
+    ${arcs}
+    <rect x="0" y="166" width="400" height="94" fill="#f0c987"/>
+    <ellipse cx="220" cy="214" rx="170" ry="30" stroke="#fff" stroke-width="3" fill="none" stroke-dasharray="10 8"/>
+    <g stroke="#7a4b2a" stroke-width="2.5">
+      <rect x="14" y="96" width="84" height="72" fill="#f4a261"/>
+      <polygon points="6,98 56,62 106,98" fill="#c0392b"/>
+      <circle cx="56" cy="84" r="8" fill="#fff"/>
+      <rect x="24" y="110" width="18" height="16" fill="#bde0fe"/><rect x="70" y="110" width="18" height="16" fill="#bde0fe"/>
+      <rect x="46" y="140" width="20" height="28" fill="#8d5a3b"/>
+    </g>
+    <ellipse cx="190" cy="240" rx="26" ry="5" fill="#d9a35b"/>
+    <path d="M170 162 C116 268, 264 268, 210 162" stroke="#d6336c" stroke-width="4" fill="none"/>
+    <g stroke="#555" stroke-width="2.5">
+      <ellipse cx="181" cy="108" rx="6" ry="18" fill="#fff"/><ellipse cx="199" cy="108" rx="6" ry="18" fill="#fff"/>
+      <ellipse cx="190" cy="176" rx="22" ry="27" fill="#fff"/>
+      <circle cx="190" cy="137" r="19" fill="#fff"/>
+      <ellipse cx="179" cy="208" rx="11" ry="6" fill="#ff8c1a"/><ellipse cx="201" cy="208" rx="11" ry="6" fill="#ff8c1a"/>
+      <line x1="172" y1="168" x2="168" y2="162"/><line x1="208" y1="168" x2="212" y2="162"/>
+    </g>
+    <ellipse cx="181" cy="108" rx="2.5" ry="11" fill="#ffadc6"/><ellipse cx="199" cy="108" rx="2.5" ry="11" fill="#ffadc6"/>
+    <circle cx="183" cy="135" r="2.6" fill="#333"/><circle cx="197" cy="135" r="2.6" fill="#333"/>
+    <circle cx="190" cy="142" r="2.5" fill="#ff8fab"/>
+    <g stroke="#2f6d32" stroke-width="2.5">
+      <path d="M276 214 A34 26 0 0 1 344 214 Z" fill="#4caf50"/>
+      <path d="M296 196 l14 -6 l14 6 l-4 14 h-20z" fill="#66bb6a"/>
+      <ellipse cx="284" cy="216" rx="9" ry="5" fill="#a9d672"/><ellipse cx="336" cy="216" rx="9" ry="5" fill="#a9d672"/>
+      <circle cx="354" cy="202" r="11" fill="#a9d672"/>
+    </g>
+    <circle cx="357" cy="199" r="2.2" fill="#333"/>
+    <line x1="350" y1="196" x2="364" y2="128" stroke="#6d4c41" stroke-width="4"/>
+    <path d="M364 128 L398 138 L362 154 Z" fill="#4dabf7" stroke="#1c7ed6" stroke-width="2"/>
+    <g stroke="#555" stroke-width="2" fill="none"><path d="M376 162 q6 -4 12 0"/><path d="M380 172 q6 -4 12 0"/></g>
+  </g>
+</svg>`;
+}
+
+// 사건 2 — 픽셀아트
+function art2(){
+  const P=10,W=32,H=20;let o='';
+  const px=(x,y,c)=>{o+=`<rect x="${x*P}" y="${y*P}" width="${P}" height="${P}" fill="${c}"/>`;};
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){if(y>=10)px(x,y,y>=14?'#3b2a6b':'#33245e');}
+  for(let y=0;y<9;y++)for(let x=0;x<9;x++){const a=(x-4)**2+(y-4)**2<=9, b=(x-5.6)**2+(y-3.2)**2<=8;if(a&&!b)px(x,y,'#fff3b0');}
+  [[11,1],[14,4],[9,7],[18,2],[23,6],[29,8],[2,11],[30,13],[6,14],[26,11]].forEach(([x,y])=>px(x,y,'#ffffff'));
+  [[16,7],[21,9],[12,9],[3,9]].forEach(([x,y])=>px(x,y,'#c6b6ff'));
+  [[27,1,'#ffffff'],[28,1,'#ffffff'],[26,2,'#fff6c2'],[25,3,'#ffe28a'],[24,4,'#cdb6ff'],[23,5,'#8f7ad6']].forEach(([x,y,c])=>px(x,y,c));
+  const castle=[
+    ".....c..c.....",
+    ".....cccc.....",
+    ".....cycc.....",
+    ".....cccc.....",
+    "c.c..cccc..c.c",
+    "ccc..cycc..ccc",
+    "cccccccccccccc",
+    "cyccccddccccyc",
+    "ccccccddcccccc",
+    "cccccccccccccc"];
+  const cc={c:'#9a9cc4',d:'#4a3b2a',y:'#ffd54f'};
+  castle.forEach((r,y)=>[...r].forEach((ch,x)=>{if(cc[ch])px(x+9,y+10,cc[ch]);}));
+  const owl=["o..o","oeeo","obbo"], oc={o:'#a0703a',e:'#ffe082',b:'#d9b38c'};
+  owl.forEach((r,y)=>[...r].forEach((ch,x)=>{if(oc[ch])px(x+14,y+7,oc[ch]);}));
+  [[15,8,'#222'],[16,8,'#222']].forEach(([x,y,c])=>{o+=`<rect x="${x*P+3}" y="${y*P+3}" width="4" height="4" fill="${c}"/>`;});
+  [[18,8],[19,7],[20,6]].forEach(([x,y])=>px(x,y,'#c0c4d6'));
+  return `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid slice" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg"><rect width="320" height="200" fill="#2a1b4d"/>${o}</svg>`;
+}
+
+// 사건 3 — 종이 오리기
+function art3(){
+  return `<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sea3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc6de"/><stop offset="1" stop-color="#235e86"/></linearGradient>
+    <filter id="pc3" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#0b2a3a" flood-opacity=".4"/></filter>
+  </defs>
+  <rect width="400" height="260" fill="url(#sea3)"/>
+  <path d="M0 60 Q50 46 100 60 T200 60 T300 60 T400 60 V260 H0Z" fill="#58a8cb" filter="url(#pc3)"/>
+  <path d="M0 115 Q50 100 100 115 T200 115 T300 115 T400 115 V260 H0Z" fill="#3f8fb6" filter="url(#pc3)"/>
+  <g filter="url(#pc3)">
+    <path d="M330 75 Q350 38 370 75 Z" fill="#f8a5c2"/>
+    <g fill="none" stroke="#f8a5c2" stroke-width="4" stroke-linecap="round"><path d="M336 75 q-4 10 0 20 q4 10 0 20"/><path d="M350 75 q4 10 0 20 q-4 10 0 20"/><path d="M364 75 q-4 10 0 20 q4 10 0 20"/></g>
+  </g>
+  <g filter="url(#pc3)">
+    <polygon points="98,135 72,108 72,162" fill="#f6b93b"/>
+    <ellipse cx="80" cy="120" rx="6" ry="14" fill="#e1a800"/><ellipse cx="80" cy="150" rx="6" ry="14" fill="#e1a800"/>
+    <path d="M206 82 V58 H226" stroke="#f6b93b" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <rect x="172" y="78" width="54" height="34" rx="9" fill="#f6b93b"/>
+    <ellipse cx="205" cy="138" rx="104" ry="44" fill="#ffd23f"/>
+    <circle cx="140" cy="140" r="12" fill="#8fd3e6" stroke="#e1a800" stroke-width="4"/>
+    <circle cx="176" cy="140" r="12" fill="#8fd3e6" stroke="#e1a800" stroke-width="4"/>
+    <circle cx="240" cy="134" r="25" fill="#cbeef8" stroke="#e1a800" stroke-width="5"/>
+  </g>
+  <polygon points="228,128 231,114 238,126" fill="#8d8d8d"/><polygon points="252,128 249,114 242,126" fill="#8d8d8d"/>
+  <circle cx="240" cy="140" r="13" fill="#9e9e9e"/>
+  <rect x="227" y="117" width="26" height="8" rx="3" fill="#fff"/><rect x="224" y="124" width="32" height="3" fill="#222"/><circle cx="240" cy="121" r="2.5" fill="#f2c14e"/>
+  <circle cx="235" cy="139" r="2" fill="#222"/><circle cx="245" cy="139" r="2" fill="#222"/>
+  <path d="M237 145 q3 3 6 0" stroke="#222" stroke-width="1.5" fill="none"/>
+  <ellipse cx="258" cy="128" rx="5" ry="8" fill="#9e9e9e" transform="rotate(20 258 128)"/>
+  <g stroke="#fff" stroke-width="2" fill="none" opacity=".8"><path d="M266 116 q5 -4 3 -10"/><path d="M272 122 q6 -2 6 -9"/></g>
+  <path d="M0 222 Q100 204 200 220 T400 214 V260 H0Z" fill="#ecd096" filter="url(#pc3)"/>
+  <g filter="url(#pc3)" fill="none" stroke-linecap="round" stroke-width="10">
+    <path d="M40 232 V200 M40 212 L24 190 M40 205 L58 182 M24 190 V176 M58 182 V168" stroke="#ff7f7f"/>
+    <path d="M100 236 V206 M100 214 L86 196 M100 210 L116 192" stroke="#ff9f43"/>
+    <path d="M320 232 V198 M320 210 L304 186 M320 204 L338 184 M304 186 V172" stroke="#f78fb3"/>
+    <path d="M372 234 V206 M372 214 L358 196 M372 212 L386 194" stroke="#ff7f7f"/>
+  </g>
+  <g fill="none" stroke="#fff" stroke-width="2.5" opacity=".75">
+    <circle cx="232" cy="46" r="6"/><circle cx="240" cy="26" r="4"/><circle cx="226" cy="12" r="3"/><circle cx="120" cy="70" r="5"/><circle cx="300" cy="100" r="4"/>
+  </g>
+</svg>`;
+}
+
+// 사건 4 — 수채화
+function art4(){
+  const rain=[...Array(26)].map((_,i)=>{const x=(i*37)%400+8, y=(i*53)%220+4;return `<line x1="${x}" y1="${y}" x2="${x-7}" y2="${y+18}"/>`}).join('');
+  return `<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="wc4"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="9" result="d"/><feGaussianBlur in="d" stdDeviation=".7"/></filter>
+    <radialGradient id="glow4"><stop offset="0" stop-color="#ffe8a3" stop-opacity=".95"/><stop offset="1" stop-color="#ffe8a3" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="400" height="260" fill="#f6f2ea"/>
+  <g filter="url(#wc4)">
+    <rect width="400" height="200" fill="#b9c8d8" opacity=".7"/>
+    <rect x="90" y="30" width="70" height="170" fill="#9fb0c4" opacity=".7"/>
+    <rect x="170" y="56" width="80" height="144" fill="#c4b2a6" opacity=".7"/>
+    <rect x="262" y="20" width="76" height="180" fill="#a6b7c9" opacity=".7"/>
+    <rect x="345" y="70" width="60" height="130" fill="#b8a99c" opacity=".7"/>
+    <g fill="#fff3c4" opacity=".55"><rect x="104" y="50" width="12" height="16"/><rect x="132" y="50" width="12" height="16"/><rect x="186" y="76" width="12" height="16"/><rect x="276" y="44" width="12" height="16"/><rect x="306" y="80" width="12" height="16"/></g>
+    <rect y="196" width="400" height="64" fill="#8fa2b6" opacity=".75"/>
+    <ellipse cx="225" cy="232" rx="95" ry="13" fill="#6f95bd" opacity=".8"/>
+  </g>
+  <circle cx="54" cy="70" r="40" fill="url(#glow4)"/>
+  <g filter="url(#wc4)">
+    <rect x="50" y="70" width="7" height="140" fill="#46525e"/>
+    <path d="M38 72 h31 l-6 -14 h-19z" fill="#46525e"/>
+    <ellipse cx="53.5" cy="76" rx="11" ry="6" fill="#ffe08a"/>
+  </g>
+  <g stroke="#6c8fb3" stroke-width="2" opacity=".55" stroke-linecap="round">${rain}</g>
+  <g filter="url(#wc4)">
+    <ellipse cx="180" cy="178" rx="30" ry="36" fill="#8d5a3b"/>
+    <circle cx="164" cy="110" r="8" fill="#8d5a3b"/><circle cx="196" cy="110" r="8" fill="#8d5a3b"/>
+    <circle cx="180" cy="128" r="22" fill="#8d5a3b"/>
+    <ellipse cx="180" cy="137" rx="9" ry="7" fill="#c79a76"/>
+    <path d="M228 152 L272 152 L284 214 L216 214 Z" fill="#ffd43b"/>
+    <circle cx="250" cy="132" r="19" fill="#f3e3c9"/>
+    <ellipse cx="233" cy="132" rx="7" ry="13" fill="#a0703a"/><ellipse cx="267" cy="132" rx="7" ry="13" fill="#a0703a"/>
+    <path d="M140 102 Q215 26 290 102 Q271 92 253 102 Q234 92 215 102 Q196 92 177 102 Q158 92 140 102Z" fill="#5c7cfa" opacity=".9"/>
+  </g>
+  <line x1="215" y1="60" x2="215" y2="168" stroke="#3b4a5a" stroke-width="3"/>
+  <line x1="200" y1="160" x2="214" y2="158" stroke="#8d5a3b" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="173" cy="124" r="2.6" fill="#2b1d14"/><circle cx="187" cy="124" r="2.6" fill="#2b1d14"/><ellipse cx="180" cy="134" rx="3.5" ry="2.5" fill="#2b1d14"/>
+  <circle cx="244" cy="129" r="2.6" fill="#2b1d14"/><circle cx="256" cy="129" r="2.6" fill="#2b1d14"/><ellipse cx="250" cy="137" rx="3.5" ry="2.5" fill="#2b1d14"/>
+  <g stroke="#ffffff" stroke-width="2" opacity=".6"><line x1="160" y1="232" x2="190" y2="232"/><line x1="240" y1="236" x2="280" y2="236"/></g>
+</svg>`;
+}
+
+// 사건 5 — 굵은 선 그림
+function art5(){
+  const tiles=[...Array(9)].map((_,i)=>`<line x1="${i*48}" y1="0" x2="${i*48}" y2="190"/>`).join('')+[...Array(4)].map((_,i)=>`<line x1="0" y1="${i*48+20}" x2="400" y2="${i*48+20}"/>`).join('');
+  return `<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="260" fill="#fffaf0"/>
+  <g stroke="#eadcc2" stroke-width="2">${tiles}</g>
+  <g stroke="#222" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="270" y1="22" x2="390" y2="22"/>
+    <path d="M296 22 v18 M290 40 h12 v34 h-12z" fill="#fff"/>
+    <path d="M336 22 v30" /><circle cx="336" cy="62" r="11" fill="#fff"/>
+    <path d="M370 22 v24" /><path d="M362 46 h16 l-3 30 h-10z" fill="#fff"/>
+    <rect x="-4" y="192" width="408" height="72" fill="#f2e3c6"/>
+    <path d="M118 182 Q74 182 66 136" stroke="#222" stroke-width="26" fill="none"/>
+    <path d="M118 182 Q74 182 66 136" stroke="#a8a8a8" stroke-width="19" fill="none" stroke-linecap="butt"/>
+    <path d="M118 182 Q74 182 66 136" stroke="#444" stroke-width="19" fill="none" stroke-linecap="butt" stroke-dasharray="9 11"/>
+    <ellipse cx="150" cy="168" rx="34" ry="38" fill="#a8a8a8"/>
+    <ellipse cx="150" cy="176" rx="18" ry="24" fill="#ececec"/>
+    <polygon points="122,98 126,76 140,92" fill="#a8a8a8"/><polygon points="178,98 174,76 160,92" fill="#a8a8a8"/>
+    <ellipse cx="150" cy="114" rx="33" ry="27" fill="#a8a8a8"/>
+    <path d="M120 110 Q150 96 180 110 Q176 124 160 120 Q150 116 140 120 Q124 124 120 110Z" fill="#444"/>
+    <ellipse cx="150" cy="128" rx="13" ry="9" fill="#ececec"/>
+    <circle cx="132" cy="56" r="13" fill="#fff"/><circle cx="150" cy="48" r="16" fill="#fff"/><circle cx="168" cy="56" r="13" fill="#fff"/>
+    <rect x="127" y="62" width="46" height="18" rx="3" fill="#fff"/>
+    <line x1="180" y1="158" x2="214" y2="150"/>
+    <line x1="208" y1="152" x2="232" y2="148" stroke-width="6"/>
+    <ellipse cx="262" cy="146" rx="32" ry="9" fill="#555"/>
+    <path d="M252 136 Q244 110 258 96" stroke-dasharray="5 6" fill="none"/>
+    <ellipse cx="270" cy="90" rx="26" ry="8" fill="#f4b860" transform="rotate(-14 270 90)"/>
+    <ellipse cx="330" cy="196" rx="44" ry="9" fill="#fff"/>
+    <path d="M314 192 q-9 -10 0 -16 q9 6 0 16z" fill="#e5383b"/>
+    <path d="M332 188 q-9 -10 0 -16 q9 6 0 16z" fill="#e5383b"/>
+    <path d="M348 193 q-9 -10 0 -16 q9 6 0 16z" fill="#e5383b"/>
+  </g>
+  <circle cx="138" cy="110" r="3.5" fill="#fff"/><circle cx="162" cy="110" r="3.5" fill="#fff"/>
+  <circle cx="150" cy="124" r="3.5" fill="#222"/>
+  <g fill="#3a9d4a"><circle cx="314" cy="175" r="3"/><circle cx="332" cy="171" r="3"/><circle cx="348" cy="176" r="3"/></g>
+  <g stroke="#222" stroke-width="2.5" fill="none" stroke-linecap="round"><path d="M296 70 l6 -6 M298 80 l8 -4"/></g>
+</svg>`;
+}
+
+// 사건 6 — 미니멀 도형
+function art6(){
+  return `<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="260" fill="#f8b26a"/>
+  <rect width="400" height="70" fill="#f39a5e"/>
+  <circle cx="305" cy="104" r="48" fill="#ee6a3a"/>
+  <polygon points="200,172 252,96 304,172" fill="#e2a24a"/><polygon points="252,96 304,172 264,172" fill="#c7832f"/>
+  <polygon points="292,172 326,124 360,172" fill="#e2a24a"/><polygon points="326,124 360,172 334,172" fill="#c7832f"/>
+  <path d="M0 168 Q100 150 200 172 T400 166 V260 H0Z" fill="#f4d58d"/>
+  <path d="M0 220 Q120 200 240 222 T400 214 V260 H0Z" fill="#eec170"/>
+  <g fill="#3a7d44"><rect x="44" y="116" width="18" height="78" rx="9"/><rect x="26" y="136" width="12" height="32" rx="6"/><rect x="26" y="160" width="26" height="12" rx="6"/><rect x="66" y="128" width="12" height="28" rx="6"/><rect x="54" y="150" width="24" height="12" rx="6"/></g>
+  <ellipse cx="155" cy="236" rx="60" ry="7" fill="#d9a85a"/>
+  <g fill="#c68b59">
+    <rect x="118" y="182" width="9" height="52" rx="3"/><rect x="132" y="182" width="9" height="52" rx="3"/><rect x="168" y="182" width="9" height="52" rx="3"/><rect x="182" y="182" width="9" height="52" rx="3"/>
+    <ellipse cx="155" cy="176" rx="50" ry="22"/>
+    <circle cx="136" cy="158" r="17"/><circle cx="170" cy="158" r="17"/>
+    <polygon points="192,170 212,124 226,130 204,180"/>
+    <ellipse cx="226" cy="122" rx="17" ry="10"/>
+  </g>
+  <circle cx="232" cy="119" r="2.5" fill="#3b2a1e"/>
+  <path d="M106 172 q-12 8 -6 22" stroke="#c68b59" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <rect x="140" y="132" width="9" height="13" rx="2" fill="#6d4c41"/>
+  <ellipse cx="153" cy="138" rx="9" ry="12" fill="#9e9e9e"/>
+  <circle cx="145" cy="116" r="5" fill="#9e9e9e"/><circle cx="165" cy="116" r="5" fill="#9e9e9e"/>
+  <circle cx="155" cy="122" r="9" fill="#9e9e9e"/>
+  <path d="M145 113 A10 9 0 0 1 165 113 Z" fill="#efe1b5"/><rect x="141" y="112" width="28" height="3.5" rx="1.5" fill="#efe1b5"/>
+  <circle cx="158" cy="122" r="1.8" fill="#222"/><circle cx="164" cy="125" r="1.6" fill="#ff8fab"/>
+  <path d="M146 146 q-10 8 -4 16" stroke="#9e9e9e" stroke-width="2" fill="none"/>
+</svg>`;
+}
+
+// 사건 7 — 네온
+function art7(){
+  const cx=262,cy=118,R=86;
+  const spokes=[...Array(8)].map((_,i)=>{const a=i*Math.PI/4;return `<line x1="${cx}" y1="${cy}" x2="${(cx+R*Math.cos(a)).toFixed(1)}" y2="${(cy+R*Math.sin(a)).toFixed(1)}"/>`}).join('');
+  const cabins=[...Array(8)].map((_,i)=>{const a=i*Math.PI/4+Math.PI/8;const x=cx+R*Math.cos(a),y=cy+R*Math.sin(a);return `<rect x="${(x-7).toFixed(1)}" y="${(y-2).toFixed(1)}" width="14" height="12" rx="3"/>`}).join('');
+  const burst=(x,y,c,r1=8,r2=28)=>`<g stroke="${c}">`+[...Array(12)].map((_,i)=>{const a=i*Math.PI/6;return `<line x1="${(x+r1*Math.cos(a)).toFixed(1)}" y1="${(y+r1*Math.sin(a)).toFixed(1)}" x2="${(x+r2*Math.cos(a)).toFixed(1)}" y2="${(y+r2*Math.sin(a)).toFixed(1)}"/>`}).join('')+'</g>';
+  return `<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+  <defs><filter id="ng7" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+  <rect width="400" height="260" fill="#0a0a1a"/>
+  <g filter="url(#ng7)" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    ${burst(70,52,'#ffd166')}${burst(372,40,'#7CFF6B',6,22)}${burst(150,30,'#ff70a6',5,18)}
+    <g stroke="#ff4fd8"><circle cx="${cx}" cy="${cy}" r="${R}"/><circle cx="${cx}" cy="${cy}" r="12"/>${spokes}
+      <line x1="${cx}" y1="${cy}" x2="215" y2="244"/><line x1="${cx}" y1="${cy}" x2="309" y2="244"/></g>
+    <g stroke="#3df5ff" stroke-width="2.5">${cabins}</g>
+    <line x1="0" y1="246" x2="400" y2="246" stroke="#7b61ff"/>
+    <g stroke="#3df5ff">
+      <line x1="108" y1="120" x2="108" y2="138"/><circle cx="108" cy="116" r="4"/>
+      <rect x="86" y="138" width="44" height="34" rx="7"/>
+      <circle cx="99" cy="153" r="4"/><circle cx="117" cy="153" r="4"/>
+      <path d="M100 163 h16"/>
+      <rect x="82" y="178" width="52" height="46" rx="9"/>
+      <path d="M96 224 v20 M120 224 v20"/>
+      <path d="M82 192 l-16 22"/>
+      <path d="M134 190 l22 -22"/>
+    </g>
+    <line x1="156" y1="168" x2="164" y2="128" stroke="#ffffff" stroke-width="2.5"/>
+    <g stroke="#ff7eb6"><circle cx="160" cy="112" r="12"/><circle cx="175" cy="106" r="11"/><circle cx="169" cy="120" r="10"/><circle cx="152" cy="102" r="9"/></g>
+  </g>
+  <g fill="#ff7eb6" opacity=".25"><circle cx="160" cy="112" r="12"/><circle cx="175" cy="106" r="11"/><circle cx="169" cy="120" r="10"/><circle cx="152" cy="102" r="9"/></g>
+</svg>`;
+}
+
+// 사건 8 — 판화
+function art8(){
+  const tree=(x,y,s)=>`<g transform="translate(${x} ${y}) scale(${s})"><rect x="-4" y="0" width="8" height="18" fill="#5a3a26"/><polygon points="0,-62 -26,-20 26,-20" fill="#3a7d5d"/><polygon points="0,-44 -32,4 32,4" fill="#3a7d5d"/><polygon points="0,-62 -10,-46 10,-46" fill="#f2ead3"/><polygon points="-26,-20 -18,-26 -8,-22 -16,-18" fill="#f2ead3"/></g>`;
+  const flakes=[[20,20],[60,50],[110,18],[160,44],[200,14],[240,40],[350,26],[380,60],[90,90],[140,80],[30,110],[370,100],[200,70]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="3.5" fill="#f2ead3"/>`).join('');
+  const peng=(x,y,scarf)=>`<g transform="translate(${x} ${y})"><ellipse cx="0" cy="0" rx="17" ry="24" fill="#1b2a44"/><ellipse cx="0" cy="5" rx="10" ry="17" fill="#f2ead3"/><circle cx="0" cy="-24" r="12" fill="#1b2a44"/><circle cx="-4" cy="-26" r="2.4" fill="#f2ead3"/><circle cx="4" cy="-26" r="2.4" fill="#f2ead3"/><polygon points="-4,-21 4,-21 0,-15" fill="#e9a03b"/><ellipse cx="-7" cy="23" rx="7" ry="3" fill="#e9a03b"/><ellipse cx="7" cy="23" rx="7" ry="3" fill="#e9a03b"/>${scarf?'<rect x="-14" y="-15" width="28" height="7" rx="3" fill="#3a7d5d"/><rect x="5" y="-12" width="7" height="16" rx="2" fill="#3a7d5d"/>':''}</g>`;
+  return `<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+  <defs><filter id="bp8"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="1" seed="3" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -3.2 3.1" result="m"/><feComposite in="SourceGraphic" in2="m" operator="in"/></filter></defs>
+  <rect width="400" height="260" fill="#f2ead3"/>
+  <g filter="url(#bp8)">
+    <rect width="400" height="170" fill="#23395b"/>
+    ${flakes}
+    ${tree(36,176,1)}${tree(86,168,.8)}${tree(196,170,.75)}${tree(370,178,1.05)}
+    <path d="M0 168 Q200 150 400 170 V260 H0Z" fill="#f2ead3"/>
+    <rect x="292" y="92" width="16" height="36" fill="#c8553d"/>
+    <path d="M300 88 q-10 -10 0 -20 q10 -10 0 -20 q-8 -8 2 -16" stroke="#f2ead3" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <rect x="228" y="140" width="96" height="70" fill="#c8553d"/>
+    <g stroke="#f2ead3" stroke-width="3"><line x1="228" y1="154" x2="324" y2="154"/><line x1="228" y1="168" x2="324" y2="168"/><line x1="228" y1="182" x2="324" y2="182"/><line x1="228" y1="196" x2="324" y2="196"/></g>
+    <polygon points="216,144 276,98 336,144" fill="#1b2a44"/>
+    <polygon points="216,144 276,98 336,144 326,144 276,106 226,144" fill="#f2ead3"/>
+    <rect x="262" y="172" width="22" height="38" fill="#5a3a26"/>
+    <rect x="296" y="160" width="20" height="18" fill="#f2c96b"/>
+    ${peng(92,206,true)}${peng(184,210,false)}
+    <circle cx="138" cy="218" r="17" fill="#f2ead3" stroke="#1b2a44" stroke-width="3"/>
+    <circle cx="138" cy="190" r="12" fill="#f2ead3" stroke="#1b2a44" stroke-width="3"/>
+    <circle cx="134" cy="188" r="1.8" fill="#1b2a44"/><circle cx="142" cy="188" r="1.8" fill="#1b2a44"/>
+  </g>
+</svg>`;
+}
+
+// 사건 9 — 클레이
+function art9(){
+  const g=(id,light,base,dark)=>`<radialGradient id="${id}" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="${light}"/><stop offset=".55" stop-color="${base}"/><stop offset="1" stop-color="${dark}"/></radialGradient>`;
+  const leaf=(x,y,r,c)=>`<ellipse cx="${x}" cy="${y}" rx="46" ry="16" transform="rotate(${r} ${x} ${y})" fill="url(#${c})"/>`;
+  const feathers=['#ff4d4d','#ff9f1c','#ffd60a','#4cc96a','#3a86ff','#8e5bd6'].map((c,i)=>`<ellipse cx="318" cy="56" rx="7" ry="26" transform="rotate(${-70+i*20} 318 78)" fill="${c}"/>`).join('');
+  return `<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    ${g('lf1','#8fdc7a','#3f9a46','#24652c')}${g('lf2','#a7e48a','#57b05a','#2f7a3a')}
+    ${g('rock','#c9c9c9','#8f8f8f','#5e5e5e')}${g('fur','#c98a5a','#8a5530','#5a3418')}${g('face','#fff1dc','#f0cfa3','#cfa070')}
+    ${g('red','#ff9a8a','#e63946','#a4161a')}${g('ban','#fff7a8','#ffd93d','#d4a514')}
+    <linearGradient id="fall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bdeaff"/><stop offset="1" stop-color="#5bb8e8"/></linearGradient>
+  </defs>
+  <rect width="400" height="260" fill="#2d6b3a"/>
+  ${leaf(40,40,30,'lf1')}${leaf(360,30,-30,'lf2')}${leaf(20,140,-20,'lf2')}${leaf(380,150,20,'lf1')}${leaf(110,20,10,'lf2')}
+  <rect x="170" y="10" width="76" height="190" rx="14" fill="url(#fall)"/>
+  <g stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".8" fill="none"><path d="M186 30 v40 M206 50 v50 M226 26 v36 M196 110 v40 M224 120 v44"/></g>
+  <ellipse cx="208" cy="210" rx="110" ry="24" fill="#7fd0f2"/>
+  <g fill="#fff"><circle cx="180" cy="200" r="10"/><circle cx="200" cy="196" r="12"/><circle cx="222" cy="198" r="11"/><circle cx="240" cy="203" r="8"/></g>
+  <rect y="226" width="400" height="34" fill="#3d8a46"/>
+  <path d="M30 240 Q20 196 60 186 Q110 176 140 196 Q160 214 150 240 Z" fill="url(#rock)"/>
+  <path d="M78 186 q-30 -6 -30 -30 q0 -16 14 -16" stroke="#8a5530" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <ellipse cx="96" cy="166" rx="24" ry="27" fill="url(#fur)"/>
+  <circle cx="74" cy="126" r="8" fill="url(#face)"/><circle cx="118" cy="126" r="8" fill="url(#face)"/>
+  <circle cx="96" cy="126" r="21" fill="url(#fur)"/>
+  <ellipse cx="97" cy="132" rx="15" ry="13" fill="url(#face)"/>
+  <circle cx="91" cy="126" r="2.8" fill="#2b1d14"/><circle cx="103" cy="126" r="2.8" fill="#2b1d14"/>
+  <path d="M92 138 q5 4 10 0" stroke="#2b1d14" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M110 150 Q124 132 118 116 Q132 130 120 152 Z" fill="url(#ban)"/>
+  <ellipse cx="112" cy="152" rx="8" ry="6" fill="url(#fur)"/>
+  ${feathers}
+  <path d="M300 100 l40 52 l-10 4z" fill="#3a86ff"/><path d="M296 100 l26 60 l-10 2z" fill="#4cc96a"/>
+  <ellipse cx="318" cy="88" rx="22" ry="16" fill="url(#red)"/>
+  <circle cx="340" cy="76" r="12" fill="url(#red)"/>
+  <path d="M350 72 q10 4 4 14 q-4 -6 -8 -6z" fill="#ffd60a"/>
+  <circle cx="343" cy="73" r="2.4" fill="#222"/>
+</svg>`;
+}
+
+// 사건 10 — 만화
+function art10(){
+  const blds=[[20,120,46,140],[70,90,40,170],[116,130,36,130],[290,100,44,160],[338,76,50,184]];
+  const b=blds.map(([x,y,w,h])=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#3b2554"/>`+[...Array(Math.floor(h/24))].map((_,i)=>`<rect x="${x+8}" y="${y+10+i*24}" width="8" height="10" fill="#ffd166"/><rect x="${x+w-16}" y="${y+10+i*24}" width="8" height="10" fill="#ffd166"/>`).join('')).join('');
+  const speed=[...Array(16)].map((_,i)=>{const a=i*Math.PI/8;return `<line x1="${(200+40*Math.cos(a)).toFixed(1)}" y1="${(140+40*Math.sin(a)).toFixed(1)}" x2="${(200+260*Math.cos(a)).toFixed(1)}" y2="${(140+260*Math.sin(a)).toFixed(1)}"/>`}).join('');
+  return `<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sky10" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b3fa0"/><stop offset=".5" stop-color="#ff6f61"/><stop offset="1" stop-color="#ffb26b"/></linearGradient>
+    <pattern id="dots10" width="8" height="8" patternUnits="userSpaceOnUse"><circle cx="4" cy="4" r="1.6" fill="#fff" opacity=".22"/></pattern>
+  </defs>
+  <rect width="400" height="260" fill="url(#sky10)"/>
+  <rect width="400" height="260" fill="url(#dots10)"/>
+  <g stroke="#fff" stroke-width="2" opacity=".35">${speed}</g>
+  ${b}
+  <rect y="208" width="400" height="52" fill="#4a3a5e"/>
+  <rect y="202" width="400" height="10" fill="#2e2240"/>
+  <g stroke="#111" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M232 200 Q290 196 300 150 Q306 112 272 104 Q290 126 270 150 Q256 168 228 170 Z" fill="#c67b3c"/>
+    <path d="M186 118 Q140 128 116 168 Q150 160 130 196 Q168 178 190 150 Z" fill="#e63946"/>
+    <ellipse cx="208" cy="168" rx="26" ry="32" fill="#d98e4a"/>
+    <ellipse cx="210" cy="176" rx="14" ry="20" fill="#f6dcb0"/>
+    <path d="M196 200 v4 M220 200 v4" />
+    <ellipse cx="192" cy="92" rx="6" ry="10" fill="#d98e4a" transform="rotate(-15 192 92)"/><ellipse cx="224" cy="92" rx="6" ry="10" fill="#d98e4a" transform="rotate(15 224 92)"/>
+    <path d="M190 82 l-3 -8 M226 82 l3 -8" />
+    <circle cx="208" cy="114" r="22" fill="#d98e4a"/>
+    <ellipse cx="193" cy="124" rx="7" ry="5" fill="#f6dcb0" stroke-width="2"/><ellipse cx="223" cy="124" rx="7" ry="5" fill="#f6dcb0" stroke-width="2"/>
+    <path d="M188 110 h40 v8 h-40z" fill="#e63946"/>
+    <line x1="230" y1="150" x2="252" y2="96"/>
+    <ellipse cx="254" cy="82" rx="11" ry="13" fill="#b5651d"/>
+    <path d="M241 78 Q254 62 267 78 Z" fill="#6d3f12"/>
+    <path d="M30 22 h120 a12 12 0 0 1 12 12 v30 a12 12 0 0 1 -12 12 h-70 l-18 18 l2 -18 h-34 a12 12 0 0 1 -12 -12 v-30 a12 12 0 0 1 12 -12z" fill="#fff"/>
+  </g>
+  <circle cx="200" cy="114" r="3" fill="#fff"/><circle cx="216" cy="114" r="3" fill="#fff"/>
+  <path d="M202 126 q6 5 12 0" stroke="#111" stroke-width="2.5" fill="none"/>
+  <text x="90" y="58" text-anchor="middle" font-family="Jua, sans-serif" font-size="28" fill="#111">출동!</text>
+  <rect x="2" y="2" width="396" height="256" fill="none" stroke="#111" stroke-width="6"/>
+</svg>`;
+}
+
+/* =====================================================================
+   사건 데이터
+   - prompt: [ ] 안의 단어가 키워드예요 (k의 w와 똑같이 써 주세요)
+   - k: 키워드 목록 { w:표시 이름, c:종류, m:인정하는 표현들 }
+        m에 들어간 표현이 학생 글(띄어쓰기 무시)에 들어 있으면 정답으로 인정해요.
+   ===================================================================== */
+const CAT = {
+  who:'🐾 누가', where:'📍 어디', thing:'🎁 무엇', color:'🎨 색깔', act:'🏃 행동',
+  num:'🔢 몇', time:'🌙 때·날씨', style:'🖌️ 스타일'
+};
+const SUN = ['태양','해가','해는','해와','해랑','해를','해님','햇빛','햇살','지는해','큰해','둥근해'];
+
+const CASES = [
+  { practice:true, tab:'실전 투입 전 훈련', title:'공원 연못의 오리들', art:artTrain,
+    prompt:'맑은 날 [공원]의 [연못]에서 [노란] [오리] [세 마리]가 [헤엄]치고, 연못 옆 [벤치]에는 [빨간] [풍선]이 묶여 있다. 단순한 [플랫] 일러스트.',
+    k:[
+      {w:'공원',c:'where'},{w:'연못',c:'where',m:['연못','호수','물가']},
+      {w:'오리',c:'who'},{w:'세 마리',c:'num',m:['세마리','3마리','셋']},
+      {w:'노란',c:'color',m:['노란','노랑']},{w:'헤엄',c:'act',m:['헤엄','수영','떠있','떠다']},
+      {w:'벤치',c:'thing',m:['벤치','의자']},{w:'풍선',c:'thing'},
+      {w:'빨간',c:'color',m:['빨간','빨강','붉은']},{w:'플랫',c:'style',m:['플랫','단순','심플','깔끔']}
+    ]},
+  { title:'운동장의 줄넘기 챔피언', art:art1,
+    prompt:'[무지개]가 뜬 학교 [운동장]에서 [주황]색 [운동화]를 신은 [토끼]가 [줄넘기]를 하고, 친구 [거북이]가 [깃발]을 흔들며 [응원]한다. [크레파스]로 그린 그림.',
+    k:[
+      {w:'운동장',c:'where',m:['운동장','학교']},{w:'토끼',c:'who'},{w:'줄넘기',c:'act',m:['줄넘기','줄을넘','줄을돌']},
+      {w:'주황',c:'color',m:['주황','오렌지']},{w:'운동화',c:'thing',m:['운동화','신발']},
+      {w:'거북이',c:'who',m:['거북']},{w:'깃발',c:'thing',m:['깃발','깃대','국기']},
+      {w:'응원',c:'act',m:['응원','파이팅','화이팅','흔들']},{w:'무지개',c:'thing'},
+      {w:'크레파스',c:'style',m:['크레파스','크레용']}
+    ]},
+  { title:'성 꼭대기의 밤 감시자', art:art2,
+    prompt:'[보라]색 [밤]하늘 아래, [성] [꼭대기]에서 [부엉이]가 [망원경]으로 [별]을 보고 있다. 하늘에는 [초승달]이 걸려 있고 [별똥별]이 떨어진다. [픽셀] 아트 스타일.',
+    k:[
+      {w:'밤',c:'time'},{w:'성',c:'where',m:['성이','성의','성에','성위','성꼭','성탑','성을','성은','성앞','성벽','궁전','성과']},
+      {w:'꼭대기',c:'where',m:['꼭대기','탑','지붕','맨위']},{w:'부엉이',c:'who',m:['부엉','올빼미']},
+      {w:'망원경',c:'thing'},{w:'별',c:'thing'},{w:'별똥별',c:'thing',m:['별똥별','유성']},
+      {w:'초승달',c:'thing',m:['초승달','달']},{w:'보라',c:'color',m:['보라','퍼플']},
+      {w:'픽셀',c:'style',m:['픽셀','도트','8비트','네모']}
+    ]},
+  { title:'깊은 바다의 노란 그림자', art:art3,
+    prompt:'[바닷속] [산호]초 사이로 [노란] [잠수함]이 지나가고, 둥근 [창문]으로 [선장] 모자를 쓴 [고양이]가 손을 [흔들]고 있다. 옆에는 [해파리]가 떠 있고 [거품]이 보글보글 올라온다. [종이] 오리기 스타일.',
+    k:[
+      {w:'바닷속',c:'where',m:['바닷속','바다','물속','해저']},{w:'산호',c:'thing'},
+      {w:'잠수함',c:'thing'},{w:'노란',c:'color',m:['노란','노랑']},
+      {w:'창문',c:'thing',m:['창문','창밖','창으로','창에','유리창']},{w:'고양이',c:'who',m:['고양이','냥이']},
+      {w:'선장',c:'who',m:['선장','캡틴','모자']},{w:'흔들',c:'act',m:['흔들','인사','손짓']},
+      {w:'해파리',c:'who'},{w:'거품',c:'thing',m:['거품','물방울','공기방울','방울','보글']},
+      {w:'종이',c:'style',m:['종이','오리기','페이퍼']}
+    ]},
+  { title:'비 오는 거리의 두 친구', art:art4,
+    prompt:'[비] 오는 [거리]에서 [곰]과 [노란] [비옷]을 입은 [강아지]가 [우산] 하나를 [함께] 쓰고 있다. 발밑에는 [웅덩이]가 있고 [가로등]이 은은하게 빛난다. 부드러운 [수채화].',
+    k:[
+      {w:'비',c:'time',m:['비가','비오','비내','비를','비는','비와','빗','장마','비오는']},
+      {w:'거리',c:'where',m:['거리','길','골목','도로','도시']},{w:'곰',c:'who'},
+      {w:'강아지',c:'who',m:['강아지','개가','개와','개랑','개는','멍멍','댕댕','강쥐']},
+      {w:'노란',c:'color',m:['노란','노랑']},{w:'비옷',c:'thing',m:['비옷','우비','레인코트']},
+      {w:'우산',c:'thing'},{w:'함께',c:'act',m:['함께','같이','나눠','나란히','둘이']},
+      {w:'웅덩이',c:'thing'},{w:'가로등',c:'thing',m:['가로등','전등','등불']},
+      {w:'수채화',c:'style',m:['수채화','물감','번지']}
+    ]},
+  { title:'부엌에서 날아오른 팬케이크', art:art5,
+    prompt:'[부엌]에서 [요리사] [모자]를 쓴 [너구리]가 [프라이팬]으로 [팬케이크]를 [뒤집]고 있다. 식탁 위 [접시]에는 빨간 [딸기]가 담겨 있다. 굵은 [선 그림] 스타일.',
+    k:[
+      {w:'부엌',c:'where',m:['부엌','주방','키친']},{w:'너구리',c:'who'},
+      {w:'요리사',c:'who',m:['요리사','셰프','쉐프','주방장','요리']},{w:'모자',c:'thing'},
+      {w:'프라이팬',c:'thing',m:['프라이팬','후라이팬','팬으로','팬을','팬에','냄비']},
+      {w:'팬케이크',c:'thing',m:['팬케이크','팬케익','핫케이크','핫케익']},
+      {w:'뒤집',c:'act',m:['뒤집','던지','날아','공중']},{w:'접시',c:'thing',m:['접시','그릇']},
+      {w:'딸기',c:'thing'},{w:'선 그림',c:'style',m:['선그림','선으로','라인','펜','흑백','선만','검은선','굵은선']}
+    ]},
+  { title:'사막을 건너는 작은 탐험가', art:art6,
+    prompt:'[주황]빛 하늘 아래 [사막]에서 [탐험가] [생쥐]가 [낙타]를 [타고] [피라미드]로 향한다. 커다란 [태양]이 지고 옆에는 [선인장]이 서 있다. [도형]으로 만든 미니멀 스타일.',
+    k:[
+      {w:'사막',c:'where',m:['사막','모래']},{w:'생쥐',c:'who',m:['생쥐','쥐']},
+      {w:'탐험가',c:'who',m:['탐험','모험','여행']},{w:'낙타',c:'who'},
+      {w:'타고',c:'act',m:['타고','탄','올라']},{w:'피라미드',c:'thing'},
+      {w:'태양',c:'thing',m:SUN},{w:'선인장',c:'thing'},
+      {w:'주황',c:'color',m:['주황','오렌지','노을']},{w:'도형',c:'style',m:['도형','미니멀','기하','단순','심플','세모','동그라미']}
+    ]},
+  { title:'놀이공원의 빛나는 손님', art:art7,
+    prompt:'[밤]의 [놀이공원], [관람차] 앞에서 [로봇]이 [분홍]색 [솜사탕]을 [들고] 있다. 하늘에는 [불꽃놀이]가 펑펑 터진다. 반짝이는 [네온] 스타일.',
+    k:[
+      {w:'밤',c:'time'},{w:'놀이공원',c:'where',m:['놀이공원','놀이동산','유원지','놀이터']},
+      {w:'관람차',c:'thing',m:['관람차']},{w:'로봇',c:'who'},
+      {w:'솜사탕',c:'thing'},{w:'분홍',c:'color',m:['분홍','핑크']},
+      {w:'들고',c:'act',m:['들고','잡고','쥐고','들었','들어']},{w:'불꽃놀이',c:'thing',m:['불꽃','폭죽']},
+      {w:'네온',c:'style',m:['네온','형광','빛나','반짝']}
+    ]},
+  { title:'눈 내리는 숲속 오두막', art:art8,
+    prompt:'[눈]이 내리는 [숲] 속 [통나무집] 앞에서 [펭귄] [두 마리]가 [눈사람]을 만든다. 한 마리는 [초록] [목도리]를 둘렀고, [굴뚝]에서는 [연기]가 피어오른다. 오래된 [판화] 느낌.',
+    k:[
+      {w:'눈',c:'time',m:['눈이','눈내','눈송이','눈밭','눈덮','함박눈','하얀눈','눈오','첫눈','겨울']},
+      {w:'숲',c:'where',m:['숲','나무']},{w:'통나무집',c:'where',m:['통나무','오두막','집']},
+      {w:'펭귄',c:'who'},{w:'두 마리',c:'num',m:['두마리','2마리','둘']},
+      {w:'눈사람',c:'thing'},{w:'초록',c:'color',m:['초록','녹색','연두']},
+      {w:'목도리',c:'thing',m:['목도리','스카프']},{w:'굴뚝',c:'thing'},
+      {w:'연기',c:'thing'},{w:'판화',c:'style',m:['판화','도장','스탬프']}
+    ]},
+  { title:'폭포 앞의 무지개 손님', art:art9,
+    prompt:'[정글] 속 [폭포] 앞 [바위] 위에서 [원숭이]가 [바나나]를 [먹고] 있고, [무지개색] [앵무새]가 [날아]온다. 말랑말랑한 [클레이] 인형 스타일.',
+    k:[
+      {w:'정글',c:'where',m:['정글','밀림','숲']},{w:'폭포',c:'where'},
+      {w:'바위',c:'where',m:['바위','돌']},{w:'원숭이',c:'who'},
+      {w:'바나나',c:'thing'},{w:'먹고',c:'act',m:['먹','냠']},
+      {w:'앵무새',c:'who',m:['앵무','새가','새는','새한','새와','새도']},{w:'무지개색',c:'color',m:['무지개','알록달록','여러색','색색']},
+      {w:'날아',c:'act',m:['날아','날개','날고','나는','날며']},{w:'클레이',c:'style',m:['클레이','점토','찰흙','지점토','3d']}
+    ]},
+  { title:'옥상 위의 작은 영웅', art:art10,
+    prompt:'[노을]이 지는 [도시]의 높은 [빌딩] [옥상]에서 [빨간] [망토]를 휘날리는 [다람쥐] [영웅]이 [도토리]를 높이 들고 있다. 말풍선이 있는 [만화] 스타일.',
+    k:[
+      {w:'노을',c:'time',m:['노을','저녁','해질','석양']},{w:'도시',c:'where',m:['도시','시내']},
+      {w:'빌딩',c:'where',m:['빌딩','건물','아파트']},{w:'옥상',c:'where',m:['옥상','지붕']},
+      {w:'다람쥐',c:'who'},{w:'영웅',c:'who',m:['영웅','히어로','슈퍼']},
+      {w:'망토',c:'thing'},{w:'빨간',c:'color',m:['빨간','빨강','붉은']},
+      {w:'도토리',c:'thing'},{w:'만화',c:'style',m:['만화','코믹','웹툰','말풍선']}
+    ]},
+];
+
+/* =====================================================================
+   게임 진행
+   ===================================================================== */
+const $=id=>document.getElementById(id);
+const norm=s=>s.toLowerCase().replace(/[\s.,!?~'"“”‘’()\-·…]/g,'');
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+CASES.forEach(c=>c.k.forEach(k=>{k.mm=(k.m||[k.w]).map(norm);}));
+const MAX=CASES.filter(c=>!c.practice).reduce((s,c)=>s+c.k.length,0);
+
+let agent='', idx=0, score=0, found=new Set(), hintsLeft=2, hinted={}, done=false, armed=false, results=[];
+
+function show(id){['startScreen','gameScreen','endScreen'].forEach(s=>$(s).classList.toggle('hidden',s!==id));window.scrollTo({top:0,behavior:'smooth'});}
+const say=t=>{$('bubble').textContent=t;};
+
+function start(){
+  agent=$('nameInput').value.trim()||'익명';
+  $('agentName').textContent=`${agent} 수사관`;
+  idx=0;score=0;results=[];$('scoreNum').textContent='0';
+  show('gameScreen');loadCase();
+}
+
+function renderDots(){
+  $('dots').innerHTML=CASES.map((c,i)=>{
+    let cls='';
+    if(i<idx){const r=results[i];cls=r&&r.f===r.t?'done':'part';}
+    else if(i===idx)cls='now';
+    return `<i class="${cls}" title="${c.practice?'훈련':'사건 '+i}"></i>`;
+  }).join('');
+}
+
+function loadCase(){
+  const c=CASES[idx];
+  found=new Set();hintsLeft=2;hinted={};done=false;armed=false;
+  $('caseTab').textContent=c.practice?c.tab:`사건 파일 No.${idx}`;
+  $('caseNum').textContent=c.practice?'훈련':`사건 ${idx} / ${CASES.length-1}`;
+  $('caseTitle').textContent=c.title;
+  $('casePts').textContent=c.practice?'연습 (점수 없음)':`최대 +${c.k.length}점`;
+  $('frame').innerHTML=c.art();
+  $('totalNum').textContent=c.k.length;
+  const inp=$('input');inp.value='';inp.disabled=false;
+  ['banner','reveal','nextRow'].forEach(id=>$(id).classList.add('hidden'));
+  $('actionRow').classList.remove('hidden');
+  $('finalBtn').classList.remove('arm');$('finalBtn').textContent='💯 최종 제출';
+  renderChips();updateUI();renderDots();
+  say(c.practice
+    ? `${agent} 수사관, 실전 전 마지막 훈련이에요! 그림 속 장소, 동물, 색깔, 그림 스타일까지 자세히 써 보세요.`
+    : pick([`새로운 사건이에요! 키워드 ${c.k.length}개가 숨어 있어요. 🔎`,`${agent} 수사관, 출동! 그림을 꼼꼼히 살펴봐요.`,`이번 그림은 어떤 스타일일까? 스타일 단서도 잊지 마요! 🖌️`]));
+}
+
+function renderChips(final=false){
+  const c=CASES[idx];
+  $('chips').innerHTML=c.k.map((k,i)=>{
+    const f=found.has(i);
+    let cls='chip', w='?'.repeat(Math.max(2,k.w.replace(/\s/g,'').length));
+    if(f){cls+=' found';w=k.w;}
+    else if(final){cls+=' missed';w=k.w;}
+    else if(hinted[i]){cls+=' hinted';w=k.w[0]+'○'.repeat(Math.max(1,k.w.replace(/\s/g,'').length-1));}
+    return `<div class="${cls}" id="chip${i}"><span class="cat">${CAT[k.c]}</span><span class="w">${w}</span></div>`;
+  }).join('');
+}
+
+function updateUI(){
+  const has=$('input').value.trim()!=='';
+  $('checkBtn').disabled=done||!has;
+  $('finalBtn').disabled=done||!has;
+  $('hintBtn').disabled=done||hintsLeft===0||found.size===CASES[idx].k.length;
+  $('hintBtn').textContent=`💡 ${hintsLeft}`;
+  $('foundNum').textContent=found.size;
+  $('scoreNum').textContent=score;
+}
+
+function grade(){
+  const c=CASES[idx], t=norm($('input').value), newly=[];
+  c.k.forEach((k,i)=>{if(!found.has(i)&&k.mm.some(m=>t.includes(m))){found.add(i);newly.push(i);}});
+  if(!c.practice)score+=newly.length;
+  return newly;
+}
+
+function midCheck(){
+  if(done)return;
+  disarm();
+  const c=CASES[idx], inp=$('input');
+  const newly=grade();
+  inp.classList.remove('flash-ok','flash-no');void inp.offsetWidth;
+  inp.classList.add(newly.length?'flash-ok':'flash-no');
+  renderChips();
+  newly.forEach((i,n)=>{const el=$('chip'+i);if(el)el.style.animationDelay=(n*0.08)+'s';});
+  const left=c.k.length-found.size;
+  $('banner').classList.remove('hidden');
+  $('bannerTitle').textContent=newly.length?`🎯 이번에 키워드 ${newly.length}개 발견!`:'🤔 새로 찾은 키워드가 없어요.';
+  $('bannerTags').innerHTML=newly.map(i=>`<span>✅ ${c.k[i].w}</span>`).join('');
+  if(left>0){
+    const cats=[...new Set(c.k.filter((k,i)=>!found.has(i)).map(k=>CAT[k.c]))];
+    $('bannerTip').textContent=`아직 ${left}개 남았어요. 남은 단서 종류: ${cats.join(', ')}`;
+  } else $('bannerTip').textContent='';
+  updateUI();
+  if(left===0){finish(true);return;}
+  const ratio=found.size/c.k.length;
+  say(newly.length===0?'글을 더 자세히 써 볼까? 색깔, 장소, 그림 스타일도 써 보면 좋아요! ✍️'
+    :ratio>=.7?`거의 다 왔어요! ${left}개만 더 찾으면 사건 해결! 🔥`
+    :ratio>=.4?'좋아요! 수사가 착착 진행되고 있어요. 👍'
+    :'좋은 출발이에요! 그림 구석구석을 더 살펴봐요. 👀');
+}
+
+function useHint(){
+  if(done||hintsLeft===0)return;
+  const c=CASES[idx];
+  const pool=c.k.map((k,i)=>i).filter(i=>!found.has(i)&&!hinted[i]);
+  if(!pool.length)return;
+  const i=pick(pool);hinted[i]=true;hintsLeft--;
+  renderChips();updateUI();
+  const k=c.k[i];
+  say(`💡 힌트! ${CAT[k.c]} 단서는 '${k.w[0]}'(으)로 시작해요. (남은 힌트 ${hintsLeft}번)`);
+}
+
+function finalSubmit(){
+  if(done)return;
+  if(!armed){
+    armed=true;$('finalBtn').classList.add('arm');$('finalBtn').textContent='정말 제출? 한 번 더!';
+    say('최종 제출하면 더 이상 고칠 수 없어요. 확실하면 한 번 더 눌러요! ⚠️');
+    return;
+  }
+  grade();finish(false);
+}
+function disarm(){armed=false;$('finalBtn').classList.remove('arm');$('finalBtn').textContent='💯 최종 제출';}
+
+function finish(perfect){
+  done=true;
+  const c=CASES[idx];
+  $('input').disabled=true;
+  $('actionRow').classList.add('hidden');
+  renderChips(true);updateUI();
+  results[idx]={f:found.size,t:c.k.length};
+  const st=document.createElement('div');
+  st.className='stamp '+(perfect?'ok':'part');
+  st.textContent=perfect?'사건 해결!':`${found.size}/${c.k.length} 확보`;
+  $('frame').appendChild(st);
+  let n=0;
+  $('revealPrompt').innerHTML=c.prompt.replace(/\[([^\]]+)\]/g,(m,w)=>{
+    const i=c.k.findIndex(k=>k.w===w);
+    return `<span class="${i>=0&&found.has(i)?'hit':'miss'}">${w}</span>`;
+  });
+  $('reveal').classList.remove('hidden');
+  $('nextBtn').textContent=idx===CASES.length-1?'🏆 최종 보고서 보기':(c.practice?'🚓 실전 사건으로 출동!':'다음 사건 ▶');
+  $('nextRow').classList.remove('hidden');
+  renderDots();
+  if(perfect){
+    burst();
+    say(c.practice?'훈련 완료! 이제 진짜 사건이에요. 준비됐죠? 💪':pick(['완벽한 수사! 키워드를 하나도 놓치지 않았어요! 🎉','사건 해결! AI가 읽은 프롬프트를 그대로 찾아냈어요! 🕵️','명탐정이 따로 없네요! ⭐']));
+  } else {
+    say('수사 종료! 빨간 점선이 놓친 키워드예요. 다음 사건에서는 이런 단어도 써 봐요. 🔎');
+  }
+}
+
+function next(){
+  if(idx===CASES.length-1){end();return;}
+  const c=CASES[idx];
+  overlay(c.practice?'🚓':'📁',c.practice?'실전 출동!':`사건 ${idx} 종료`,`다음: ${CASES[idx+1].title}`,()=>{idx++;loadCase();window.scrollTo({top:0,behavior:'smooth'});});
+}
+
+function overlay(e,t,s,cb){
+  $('ovEmoji').textContent=e;$('ovTitle').textContent=t;$('ovSub').textContent=s;
+  $('overlay').classList.remove('hidden');
+  setTimeout(()=>{$('overlay').classList.add('hidden');cb();},1400);
+}
+
+function end(){
+  const pct=MAX?score/MAX:0;
+  let rank,msg;
+  if(pct>=.9){rank='🏅 수사반장';msg='거의 모든 키워드를 찾아냈어요! 그림을 보고 프롬프트를 거꾸로 읽어내는 진짜 실력자예요.';}
+  else if(pct>=.7){rank='🎖️ 수석 수사관';msg='훌륭해요! 장소·색깔·스타일까지 꼼꼼하게 쓰는 습관이 생겼어요.';}
+  else if(pct>=.5){rank='🔎 정식 수사관';msg='잘했어요! 놓친 키워드를 보면, 어떤 종류의 단어를 더 쓰면 좋을지 알 수 있어요.';}
+  else{rank='🧢 수습 수사관';msg='실전은 어려웠죠? 누가 + 어디서 + 무엇을 + 어떤 색 + 어떤 스타일, 이 순서로 써 보며 다시 도전해요!';}
+  $('endName').textContent=`${agent} 수사관`;
+  $('endScore').textContent=score;$('endMax').textContent=MAX;
+  $('endRank').textContent=rank;$('endMsg').textContent=msg;
+  $('reportBody').innerHTML=CASES.map((c,i)=>{
+    if(c.practice)return '';
+    const r=results[i]||{f:0,t:c.k.length};
+    return `<tr><td>No.${i} ${c.title}<div class="bar"><i style="width:${r.f/r.t*100}%"></i></div></td><td class="n">${r.f} / ${r.t}</td></tr>`;
+  }).join('');
+  show('endScreen');
+  if(pct>=.7)burst();
+}
+
+function burst(){
+  const box=$('confetti'),cols=['#f2b632','#d64545','#3b6fd8','#2f9e5b','#da77f2'];
+  for(let i=0;i<40;i++){const p=document.createElement('i');p.style.left=Math.random()*100+'vw';p.style.background=pick(cols);p.style.animationDelay=Math.random()*.3+'s';p.style.animationDuration=(1+Math.random()*.8)+'s';box.appendChild(p);setTimeout(()=>p.remove(),2200);}
+}
+
+$('startBtn').addEventListener('click',start);
+$('nameInput').addEventListener('keydown',e=>{if(e.key==='Enter')start();});
+$('input').addEventListener('input',()=>{updateUI();if(armed)disarm();});
+$('checkBtn').addEventListener('click',midCheck);
+$('hintBtn').addEventListener('click',useHint);
+$('finalBtn').addEventListener('click',finalSubmit);
+$('nextBtn').addEventListener('click',next);
+$('restartBtn').addEventListener('click',()=>show('startScreen'));
+</script>
+</body>
+</html>
